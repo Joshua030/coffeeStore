@@ -1,29 +1,33 @@
-import CoffeeStore from "../coffee-store/[id]";
+// import CoffeeStore from "../coffee-store/[id]";
 
-const Airtable = require("airtable");
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).base(
-  process.env.AIRTABLE_BASE_KEY
-);
-const table = base("coffee-stores");
-console.log({ table });
+import { getMinifiedRecords, table } from "lib/airtable";
+
+// const Airtable = require("airtable");
+// const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).base(
+//   process.env.AIRTABLE_BASE_KEY
+// );
+// const table = base("coffee-stores");
+// console.log({ table });
 
 const createCoffeeStore = async (req, res) => {
   if (req.method === "POST") {
     //find a record
     const { id, name, locality, address, imgUrl, voting } = req.body;
+    console.log('create',req.body);
     try {
         if (id) {
       const findCoffeeStoreRecords = await table
         .select({
-          filterByFormula: `id=${id}`,
+          filterByFormula: `id="${id}"`,
         })
         .firstPage();
       // res.send('hi there')
       // console.log({ findCoffeeStoreRecords });
-      const records = findCoffeeStoreRecords.map(({ fields }) => {
-        return { ...fields };
-      });
+      // const records = findCoffeeStoreRecords.map(({ fields }) => {
+      //   return { ...fields };
+      // });
       if (findCoffeeStoreRecords.length !== 0) {
+        const records = getMinifiedRecords(findCoffeeStoreRecords);
         res.json(records);
       } else {
         if (name) {
@@ -40,9 +44,10 @@ const createCoffeeStore = async (req, res) => {
             },
           },
         ]);
-        const records = createRecords.map(({ fields }) => {
-            return { ...fields };
-          });
+        // const records = createRecords.map(({ fields }) => {
+        //     return { ...fields };
+        //   });
+        const records = getMinifiedRecords(createRecords);
         res.json(records);
       }else {
         res.status(400);
