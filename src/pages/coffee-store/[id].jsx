@@ -49,9 +49,12 @@ const CoffeeStore = (initialProps) => {
   // const { name, location, imgUrl } = coffeStore;
 
 //  console.log(initialProps);
-  const handleUpvoteButton = () => {
-    console.log('test');
-  }
+const [votingCount, setVotingCount] = useState(1);
+
+const handleUpvoteButton = () => {
+  console.log("handle upvote");
+  setVotingCount(votingCount+1);
+};
 
   if (router.isFallback) return <div>Loading...</div>;
   const id = router.query.id;
@@ -140,7 +143,7 @@ const CoffeeStore = (initialProps) => {
           </div>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/star.svg" width={24} height={24} />
-            <p className={styles.text}>1</p>
+            <p className={styles.text}>{votingCount}</p>
           </div>
           <button className={styles.upvoteButton} onClick={handleUpvoteButton}>
             Up vote!

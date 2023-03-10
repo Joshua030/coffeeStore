@@ -1,6 +1,6 @@
 // import CoffeeStore from "../coffee-store/[id]";
 
-import { getMinifiedRecords, table } from "lib/airtable";
+import { findRecordByFilter, getMinifiedRecords, table } from "lib/airtable";
 
 // const Airtable = require("airtable");
 // const base = new Airtable({ apiKey: process.env.AIRTABLE_API_TOKEN }).base(
@@ -16,18 +16,19 @@ const createCoffeeStore = async (req, res) => {
     console.log('create',req.body);
     try {
         if (id) {
-      const findCoffeeStoreRecords = await table
-        .select({
-          filterByFormula: `id="${id}"`,
-        })
-        .firstPage();
+          const records = await findRecordByFilter(id)
+      // const findCoffeeStoreRecords = await table
+      //   .select({
+      //     filterByFormula: `id="${id}"`,
+      //   })
+      //   .firstPage();
       // res.send('hi there')
       // console.log({ findCoffeeStoreRecords });
       // const records = findCoffeeStoreRecords.map(({ fields }) => {
       //   return { ...fields };
       // });
-      if (findCoffeeStoreRecords.length !== 0) {
-        const records = getMinifiedRecords(findCoffeeStoreRecords);
+      if (records.length !== 0) {
+        // const records = getMinifiedRecords(findCoffeeStoreRecords);
         res.json(records);
       } else {
         if (name) {
