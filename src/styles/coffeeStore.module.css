@@ -101,6 +101,10 @@
   .upvoteButton:hover {
     background-color: var(--text-purple);
   }
+
+  .loader{
+    margin:50vh auto;
+  }
   
   @media (min-width: 1024px) {
     .container {

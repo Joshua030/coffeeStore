@@ -9,6 +9,7 @@ import { useContext, useEffect, useState } from "react";
 import { fetcher, isEmpty } from "utils";
 import { StoreContext } from "../_app";
 import useSWR from "swr";
+import { PacmanLoader } from "react-spinners";
 
 export async function getStaticProps({ params }) {
   // const { id } = params;
@@ -51,13 +52,15 @@ const CoffeeStore = (initialProps) => {
     initialProps.coffeStore
   );
 
+  // const [loading, setLoading] = useState(false);
+
   const { state } = useContext(StoreContext);
 
-  //create coffe store 
+  //create coffe store
 
   const handleCreateCoffeeStore = async (data) => {
     try {
-      const { fsq_id, name, imgUrl,voting, location } = data;
+      const { fsq_id, name, imgUrl, voting, location } = data;
       const response = await fetch("/api/createCoffeeStore", {
         method: "POST",
         headers: {
@@ -74,7 +77,7 @@ const CoffeeStore = (initialProps) => {
       });
 
       const dbCoffeeStore = await response.json();
-      console.log({ dbCoffeeStore });
+      // console.log({ dbCoffeeStore });
     } catch (err) {
       console.error("Error creating coffee store", err);
     }
@@ -86,13 +89,13 @@ const CoffeeStore = (initialProps) => {
         const findCoffeeStoreById = state.coffeStore.find(
           (element) => element.fsq_id == id
         );
-        console.log({findCoffeeStoreById })
+        // console.log({findCoffeeStoreById })
         setCoffeeStoreState(findCoffeeStoreById);
         handleCreateCoffeeStore(findCoffeeStoreById);
       }
     } else {
-      console.log("initial", initialProps.coffeStore);
-      console.log("hook", coffeeStoreState);
+      // console.log("initial", initialProps.coffeStore);
+      // console.log("hook", coffeeStoreState);
       handleCreateCoffeeStore(initialProps.coffeStore);
     }
   }, [id, initialProps.coffeeStore]);
@@ -100,15 +103,14 @@ const CoffeeStore = (initialProps) => {
   const { name, location, imgUrl } = coffeeStoreState;
 
   //  console.log(initialProps);
-  const [votingCount, setVotingCount] = useState(1);
+  const [votingCount, setVotingCount] = useState(0);
 
-  
   const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
-  console.log({ data });
+  // console.log({ data });
 
   useEffect(() => {
     if (data && data.length > 0) {
-      console.log("data from SWR", data);
+      // console.log("data from SWR", data);
       const transformedData = data.map((obj) => {
         const { address, locality } = obj;
         return { ...obj, location: { address, locality } };
@@ -118,7 +120,11 @@ const CoffeeStore = (initialProps) => {
     }
   }, [data]);
 
-  //votes
+  // votes
+  // const handleClickLoading= () => {
+  //   setLoading(true);
+  // };
+
 
   const handleUpvoteButton = async () => {
     try {
@@ -147,59 +153,76 @@ const CoffeeStore = (initialProps) => {
     return <div>Something went wrong retrieving coffee store page</div>;
   }
 
-  
   // console.log({state});
 
-
-
-
-
-
-  
   return (
-    <div className={styles.layout}>
-      <Head>
-        <title>{name}</title>
-      </Head>
-      <div className={styles.container}>
-        <div className={styles.col1}>
-          <div className={styles.backToHomeLink}>
-            <Link href="/">←Back to home</Link>
-          </div>
-          <div className={styles.nameWrapper}>
-            <h1 className={styles.name}>{name}</h1>
-          </div>
-          <Image
-            src={
-              imgUrl ||
-              "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
-            }
-            width={300}
-            height={180}
-            className={styles.storeImg}
-            alt={name}
-          />
-        </div>
+    <>
+      {/* {loading ? (
+        <PacmanLoader
+          className={styles.loader}
+          color="rgba(67, 56, 202, 1)"
+          size={50}
+          loading={loading}
+        />
+      ) : (
+        <div> */}
+          <div className={styles.layout}>
+            <Head>
+              <title>{name}</title>
+            </Head>
+            <div className={styles.container}>
+              <div className={styles.col1}>
+                <div className={styles.backToHomeLink}>
+                  <Link href="/" > Back to home</Link>
+                </div>
+                <div className={styles.nameWrapper}>
+                  <h1 className={styles.name}>{name}</h1>
+                </div>
+                <Image
+                  src={
+                    imgUrl ||
+                    "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+                  }
+                  width={300}
+                  height={180}
+                  className={styles.storeImg}
+                  alt={name}
+                />
+              </div>
 
-        <div className={cls("glass", styles.col2)}>
-          <div className={styles.iconWrapper}>
-            <Image src="/static/icons/places.svg" width={24} height={24} />
-            <p className={styles.text}>{location?.address}</p>
+              <div className={cls("glass", styles.col2)}>
+                <div className={styles.iconWrapper}>
+                  <Image
+                    src="/static/icons/places.svg"
+                    width={24}
+                    height={24}
+                  />
+                  <p className={styles.text}>{location?.address}</p>
+                </div>
+                <div className={styles.iconWrapper}>
+                  <Image
+                    src="/static/icons/nearMe.svg"
+                    width={24}
+                    height={24}
+                  />
+                  <p className={styles.text}>{location?.locality}</p>
+                </div>
+                <div className={styles.iconWrapper}>
+                  <Image src="/static/icons/star.svg" width={24} height={24} />
+                  <p className={styles.text}>{votingCount}</p>
+                </div>
+                <button
+                  className={styles.upvoteButton}
+                  onClick={handleUpvoteButton}
+                >
+                  Up vote!
+                </button>
+              </div>
+            </div>
           </div>
-          <div className={styles.iconWrapper}>
-            <Image src="/static/icons/nearMe.svg" width={24} height={24} />
-            <p className={styles.text}>{location?.locality}</p>
-          </div>
-          <div className={styles.iconWrapper}>
-            <Image src="/static/icons/star.svg" width={24} height={24} />
-            <p className={styles.text}>{votingCount}</p>
-          </div>
-          <button className={styles.upvoteButton} onClick={handleUpvoteButton}>
-            Up vote!
-          </button>
-        </div>
-      </div>
-    </div>
+        {/* </div>
+      )} */}
+    </>
   );
 };
 

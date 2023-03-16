@@ -43,7 +43,7 @@ const createCoffeeStore = async (req, res) => {
               name,
               address,
               locality,
-              voting:1,
+              voting:0,
               imgUrl,
             },
           },

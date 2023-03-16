@@ -12,7 +12,7 @@ const favouriteCoffeeStoreById = async (req, res) => {
   
             const calculateVoting = parseInt(record.voting) + parseInt(1);
   
-            console.log({ calculateVoting });
+            // console.log({ calculateVoting });
   
             // update a record
   

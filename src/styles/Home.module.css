@@ -44,6 +44,10 @@
   color: var(--text-white-100);
 }
 
+.loader{
+  margin:50vh auto;
+}
+
 /** Breakpoints:
   sm: min-width: 640px;
   md: min-width: 768px;
@@ -117,3 +121,4 @@ margin-top: 2rem /*112px*/
    
 }
 }
+

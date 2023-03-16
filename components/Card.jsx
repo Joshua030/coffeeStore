@@ -3,9 +3,14 @@ import Link from "next/link";
 import styles from "./card.module.css";
 import cls from 'classnames';
 
-const card = ({ name, imgUrl, href }) => {
+const card = ({ name, imgUrl, href,onAction }) => {
+
+  const handleClick = () => {
+    onAction();
+  };
+
   return (
-    <Link href={href} className={`"glass" ${styles.cardLink}`}>
+    <Link href={href} className={`"glass" ${styles.cardLink}`} onClick={handleClick}>
       <div className={cls("glass",styles.container)}>
         <div className={styles.cardHeaderWrapper}>
           <h2 className={styles.cardHeader}>{name}</h2>
