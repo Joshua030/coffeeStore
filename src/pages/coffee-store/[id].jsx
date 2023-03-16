@@ -10,16 +10,14 @@ import { fetcher, isEmpty } from "utils";
 import { StoreContext } from "../_app";
 import useSWR from "swr";
 
-
-
-
 export async function getStaticProps({ params }) {
   // const { id } = params;
- 
-    
-    const coffeeStores = await fetchCoffeeStores();
-    const findCoffeeStoreById = coffeeStores.find((element) => element.fsq_id == params.id);
- 
+
+  const coffeeStores = await fetchCoffeeStores();
+  const findCoffeeStoreById = coffeeStores.find(
+    (element) => element.fsq_id == params.id
+  );
+
   return {
     props: {
       coffeStore: findCoffeeStoreById ? findCoffeeStoreById : {},
@@ -29,7 +27,7 @@ export async function getStaticProps({ params }) {
 
 export async function getStaticPaths() {
   const coffeeStores = await fetchCoffeeStores();
-  const paths = coffeeStores.map(({ fsq_id})  => {
+  const paths = coffeeStores.map(({ fsq_id }) => {
     return {
       params: {
         id: fsq_id.toString(),
@@ -46,21 +44,81 @@ export async function getStaticPaths() {
 const CoffeeStore = (initialProps) => {
   const router = useRouter();
   const id = router.query.id;
-//  console.log(coffeStore);
+  if (router.isFallback) return <div>Loading...</div>;
+  //  console.log(coffeStore);
   // const { name, location, imgUrl } = coffeStore;
-  const [coffeeStoreState, setCoffeeStoreState] = useState(initialProps.coffeStore);
-//  console.log(initialProps);
-const [votingCount, setVotingCount] = useState(0);
+  const [coffeeStoreState, setCoffeeStoreState] = useState(
+    initialProps.coffeStore
+  );
 
-const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`);
+  const { state } = useContext(StoreContext);
 
-useEffect(() => {
-  if (data && data.length > 0) {
-    console.log("data from SWR", data);
-    setCoffeeStoreState(data[0]);
-    setVotingCount(data[0].voting);
-  }
-}, [data]);
+  //create coffe store 
+
+  const handleCreateCoffeeStore = async (data) => {
+    try {
+      const { fsq_id, name, imgUrl,voting, location } = data;
+      const response = await fetch("/api/createCoffeeStore", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: fsq_id,
+          name,
+          voting,
+          imgUrl,
+          locality: location?.locality || "",
+          address: location?.address || "",
+        }),
+      });
+
+      const dbCoffeeStore = await response.json();
+      console.log({ dbCoffeeStore });
+    } catch (err) {
+      console.error("Error creating coffee store", err);
+    }
+  };
+
+  useEffect(() => {
+    if (isEmpty(initialProps.coffeStore)) {
+      if (state.coffeStore.length > 0) {
+        const findCoffeeStoreById = state.coffeStore.find(
+          (element) => element.fsq_id == id
+        );
+        console.log({findCoffeeStoreById })
+        setCoffeeStoreState(findCoffeeStoreById);
+        handleCreateCoffeeStore(findCoffeeStoreById);
+      }
+    } else {
+      console.log("initial", initialProps.coffeStore);
+      console.log("hook", coffeeStoreState);
+      handleCreateCoffeeStore(initialProps.coffeStore);
+    }
+  }, [id, initialProps.coffeeStore]);
+
+  const { name, location, imgUrl } = coffeeStoreState;
+
+  //  console.log(initialProps);
+  const [votingCount, setVotingCount] = useState(1);
+
+  
+  const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
+  console.log({ data });
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      console.log("data from SWR", data);
+      const transformedData = data.map((obj) => {
+        const { address, locality } = obj;
+        return { ...obj, location: { address, locality } };
+      });
+      setCoffeeStoreState(transformedData[0]);
+      setVotingCount(transformedData[0].voting);
+    }
+  }, [data]);
+
+  //votes
 
   const handleUpvoteButton = async () => {
     try {
@@ -83,65 +141,21 @@ useEffect(() => {
     } catch (err) {
       console.error("Error upvoting the coffee store", err);
     }
-};
-
-if (error) {
-  return <div>Something went wrong retrieving coffee store page</div>;
-}
-
-  if (router.isFallback) return <div>Loading...</div>;
- 
- 
-
-  
- 
-  const {
-    state
-  } = useContext(StoreContext);
-  // console.log({state});
-
-  const handleCreateCoffeeStore = async (data) => {
-    try {
-      const { fsq_id, name, voting, imgUrl, location } = data;
-      console.log(fsq_id);
-      const response = await fetch("/api/createCoffeeStore", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id:fsq_id,
-          name,
-          voting: 0,
-          imgUrl,
-          locality: location?.locality || "",
-          address: location?.address || "",
-        }),
-      });
-
-      const dbCoffeeStore = await response.json();
-      console.log({ dbCoffeeStore });
-    } catch (err) {
-      console.error("Error creating coffee store", err);
-    }
   };
 
-  useEffect(() =>{
-    if (isEmpty(initialProps.coffeStore)) {
-      if (state.coffeStore.length > 0) {
-        const findCoffeeStoreById= state.coffeStore.find((element) =>element.fsq_id == id);
-        // console.log(findCoffeeStore)
-        setCoffeeStoreState(findCoffeeStoreById);
-        handleCreateCoffeeStore(findCoffeeStoreById);
-      }
-    }else {
-      console.log('initial',initialProps.coffeStore)
-      handleCreateCoffeeStore(initialProps.coffeStore);
-    }
- 
-  }, [id,initialProps.coffeeStore]);
+  if (error) {
+    return <div>Something went wrong retrieving coffee store page</div>;
+  }
 
-  const { name,location, imgUrl } = coffeeStoreState;
+  
+  // console.log({state});
+
+
+
+
+
+
+  
   return (
     <div className={styles.layout}>
       <Head>
@@ -156,8 +170,10 @@ if (error) {
             <h1 className={styles.name}>{name}</h1>
           </div>
           <Image
-            src={imgUrl ||
-              "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"}
+            src={
+              imgUrl ||
+              "https://images.unsplash.com/photo-1504753793650-d4a2b783c15e?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80"
+            }
             width={300}
             height={180}
             className={styles.storeImg}

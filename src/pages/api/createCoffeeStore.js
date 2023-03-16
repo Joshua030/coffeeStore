@@ -13,7 +13,10 @@ const createCoffeeStore = async (req, res) => {
   if (req.method === "POST") {
     //find a record
     const { id, name, locality, address, imgUrl, voting } = req.body;
+    console.log('newVote',voting);
+    const newVote=parseInt(voting)
     console.log('create',req.body);
+  
     try {
         if (id) {
           const records = await findRecordByFilter(id)
@@ -40,7 +43,7 @@ const createCoffeeStore = async (req, res) => {
               name,
               address,
               locality,
-              voting,
+              voting:1,
               imgUrl,
             },
           },
