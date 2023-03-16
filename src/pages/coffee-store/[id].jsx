@@ -6,9 +6,9 @@ import Image from "next/image";
 import cls from "classnames";
 import { fetchCoffeeStores } from "lib/coffee-stores";
 import { useContext, useEffect, useState } from "react";
-import { isEmpty } from "utils";
+import { fetcher, isEmpty } from "utils";
 import { StoreContext } from "../_app";
-
+import useSWR from "swr";
 
 
 
@@ -45,22 +45,55 @@ export async function getStaticPaths() {
 
 const CoffeeStore = (initialProps) => {
   const router = useRouter();
+  const id = router.query.id;
 //  console.log(coffeStore);
   // const { name, location, imgUrl } = coffeStore;
-
+  const [coffeeStoreState, setCoffeeStoreState] = useState(initialProps.coffeStore);
 //  console.log(initialProps);
-const [votingCount, setVotingCount] = useState(1);
+const [votingCount, setVotingCount] = useState(0);
 
-const handleUpvoteButton = () => {
-  console.log("handle upvote");
-  setVotingCount(votingCount+1);
+const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`);
+
+useEffect(() => {
+  if (data && data.length > 0) {
+    console.log("data from SWR", data);
+    setCoffeeStoreState(data[0]);
+    setVotingCount(data[0].voting);
+  }
+}, [data]);
+
+  const handleUpvoteButton = async () => {
+    try {
+      const response = await fetch("/api/favouriteCoffeeStoreById", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+        }),
+      });
+
+      const dbCoffeeStore = await response.json();
+
+      if (dbCoffeeStore && dbCoffeeStore.length > 0) {
+        let count = votingCount + 1;
+        setVotingCount(count);
+      }
+    } catch (err) {
+      console.error("Error upvoting the coffee store", err);
+    }
 };
 
+if (error) {
+  return <div>Something went wrong retrieving coffee store page</div>;
+}
+
   if (router.isFallback) return <div>Loading...</div>;
-  const id = router.query.id;
+ 
  
 
-  const [coffeeStoreState, setCoffeeStoreState] = useState(initialProps.coffeStore);
+  
  
   const {
     state
