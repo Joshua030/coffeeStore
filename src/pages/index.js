@@ -90,6 +90,7 @@ export default function Home({ coffeeStores }) {
               name="viewport"
               content="width=device-width, initial-scale=1"
             />
+             <meta name="description" content="Allows you to discover coffee stores"></meta>
           </Head>
           <main className={styles.main}>
             <div className={styles.container}>
